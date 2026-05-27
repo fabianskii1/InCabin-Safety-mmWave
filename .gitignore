@@ -1,0 +1,15 @@
+# Byte-compiled / optimized / venv folders
+__pycache__/
+*.py[cod]
+*.class
+.venv/
+venv/
+ENV/
+env/
+
+# Data and Logs
+*.bin
+*.csv
+*.log
+.idea/
+.vscode/
