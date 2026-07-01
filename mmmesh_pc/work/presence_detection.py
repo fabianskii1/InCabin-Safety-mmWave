@@ -68,8 +68,12 @@ def main():
                    help='zero-Doppler 주변 몇 bin을 정지 잔차로 제외할지')
     p.add_argument('--threshold', type=float, default=None,
                    help='occupancy score 임계값. 이 값 초과면 "사람 있음"')
-    p.add_argument('--hold-frames', type=int, default=3,
-                   help='연속 N프레임 이상 초과해야 최종 "있음"으로 확정(오탐 방지)')
+    p.add_argument('--window', type=int, default=50,
+                   help='시간통합 판정 윈도우 크기(프레임). 10FPS면 50=5초. '
+                        '호흡 1주기(2~5초)를 여러 번 담을 만큼 길게.')
+    p.add_argument('--present-ratio', type=float, default=0.15,
+                   help='윈도우 안에서 임계 초과 프레임 비율이 이 값 이상이면 "사람 있음". '
+                        '정지 호흡은 순간에너지가 주기적으로만 튀므로 100%%가 아니라 일부만 넘어도 존재로 본다.')
     p.add_argument('--calibrate', action='store_true',
                    help='판정 대신 score 통계만 출력(빈 공간 기준선 잡기용)')
     args = p.parse_args()
@@ -85,29 +89,43 @@ def main():
     print('[info] frames=%d, ROI range bin [%d,%d] = %.2f~%.2f m'
           % (n, lo, hi, lo * cfg.RANGE_RESOLUTION, hi * cfg.RANGE_RESOLUTION))
 
+    from collections import deque
+
     reader = RawDataReader(args.bin_file)
     scores = np.zeros(n)
-    consec = 0
+    do_decide = (not args.calibrate) and (args.threshold is not None)
+    recent = deque(maxlen=args.window)   # 최근 window개 프레임의 초과 여부(True/False)
+    verdicts = np.zeros(n, dtype=bool)   # 프레임별 '시간통합 최종 판정'
     for i in range(n):
         bin_frame = reader.getNextFrame(frameConfig)
         np_frame = bin2np_frame(bin_frame)
         score, mean_e = frame_occupancy_score(np_frame, frameConfig, (lo, hi), args.doppler_guard)
         scores[i] = score
 
-        if not args.calibrate and args.threshold is not None:
-            present = score > args.threshold
-            consec = consec + 1 if present else 0
-            confirmed = consec >= args.hold_frames
-            print('Frame %4d | score=%6.3f | %s%s'
+        if do_decide:
+            raw_present = score > args.threshold
+            recent.append(raw_present)
+            # 윈도우 내 초과 비율로 최종 판정 (순간 깜빡임을 흡수)
+            ratio = sum(recent) / len(recent)
+            occupied = ratio >= args.present_ratio
+            verdicts[i] = occupied
+            print('Frame %4d | score=%6.3f | %s | win초과 %4.0f%% -> %s'
                   % (i, score,
-                     'PRESENT' if present else 'empty  ',
-                     '  <== 사람 확정' if confirmed else ''))
+                     'peak' if raw_present else '    ',
+                     ratio * 100,
+                     'PRESENT (사람있음)' if occupied else 'empty'))
 
     reader.close()
 
     print('=' * 50)
     print('score  min=%.3f  mean=%.3f  max=%.3f  std=%.3f'
           % (scores.min(), scores.mean(), scores.max(), scores.std()))
+    if do_decide:
+        occ_pct = 100.0 * verdicts.mean()
+        peak_pct = 100.0 * np.mean(scores > args.threshold)
+        print('순간 임계초과 프레임: %.1f%%   |   시간통합 "사람있음" 판정: %.1f%% of time'
+              % (peak_pct, occ_pct))
+        print('(정지 호흡이면 순간초과는 낮아도, 시간통합 판정은 거의 100%%에 가까워야 정상)')
     if args.calibrate:
         suggest = scores.max() + 2 * scores.std()
         print('[calibrate] 빈 공간 기준선. 사람 판정 threshold 권장값 ~= %.3f' % suggest)
