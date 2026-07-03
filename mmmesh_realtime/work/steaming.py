@@ -32,6 +32,7 @@ class adcCapThread (threading.Thread):
         self.threadID = threadID
         self.name = name
         self.recentCapNum = 0
+        self.lostFrameCount = 0
         self.latestReadNum = 0
         self.nextReadBufferPosition = 0
         self.nextCapBufferPosition = 0
@@ -62,49 +63,65 @@ class adcCapThread (threading.Thread):
         self._frame_receiver()
     
     def _frame_receiver(self):
-        # first capture -- find the beginning of a Frame
+        # 프레임 경계에 맞춰 패킷을 조립한다. 패킷 유실이 생겨도 스레드를 종료하지 않고,
+        # 조립 중이던(구멍 난) 프레임만 폐기한 뒤 다음 프레임 경계부터 재동기화한다.
+        # byte_count는 DCA 하드웨어의 절대 누적 바이트라 유실에도 어긋나지 않으므로,
+        # 시작 시점의 경계 탐색 로직을 재활용해 언제든 다시 정렬할 수 있다.
         self.data_socket.settimeout(1)
-        lost_packets = False
         recentframe = np.zeros(UINT16_IN_FRAME, dtype=np.int16)
-        while self.whileSign:
-            packet_num, byte_count, packet_data = self._read_data_packet()
-            after_packet_count = (byte_count+BYTES_IN_PACKET)% BYTES_IN_FRAME
-            
-            # the recent Frame begin at the middle of this packet
-            if after_packet_count < BYTES_IN_PACKET :
-                recentframe[0:after_packet_count//2] = packet_data[(BYTES_IN_PACKET-after_packet_count)//2:]
-                self.recentCapNum = (byte_count+BYTES_IN_PACKET)//BYTES_IN_FRAME
-                recentframe_collect_count = after_packet_count
-                last_packet_num = packet_num
-                break
-                
-            last_packet_num = packet_num
-            
-        while self.whileSign:
-            packet_num, byte_count, packet_data = self._read_data_packet()
-            # fix up the lost packets
-            if last_packet_num < packet_num-1:                
-                lost_packets = True
-                print('\a')
-                print("Packet Lost! Please discard this data.")
-                exit(0)
+        recentframe_collect_count = 0
+        last_packet_num = -1
+        need_resync = True  # 시작 시점 및 유실 직후엔 프레임 경계부터 다시 맞춘다
 
-            # begin to process the recent packet
-            # if the frame finished when this packet collected
-            if recentframe_collect_count + BYTES_IN_PACKET >= BYTES_IN_FRAME:                
-                recentframe[recentframe_collect_count//2:]=packet_data[:(BYTES_IN_FRAME-recentframe_collect_count)//2]
-                self._store_frame(recentframe)                
-                self.lostPackeFlagtArray[self.nextCapBufferPosition] = False
-                self.recentCapNum = (byte_count + BYTES_IN_PACKET)//BYTES_IN_FRAME
+        while self.whileSign:
+            try:
+                packet_num, byte_count, packet_data = self._read_data_packet()
+            except socket.timeout:
+                # 데이터가 잠깐 끊겨도 스레드를 죽이지 않고 계속 대기
+                continue
+
+            # ---- 재동기화: 이 패킷 안에서 프레임 경계를 찾는다 ----
+            if need_resync:
+                after_packet_count = (byte_count + BYTES_IN_PACKET) % BYTES_IN_FRAME
+                if after_packet_count < BYTES_IN_PACKET:
+                    recentframe = np.zeros(UINT16_IN_FRAME, dtype=np.int16)
+                    recentframe[0:after_packet_count // 2] = packet_data[(BYTES_IN_PACKET - after_packet_count) // 2:]
+                    self.recentCapNum = (byte_count + BYTES_IN_PACKET) // BYTES_IN_FRAME
+                    recentframe_collect_count = after_packet_count
+                    need_resync = False
+                last_packet_num = packet_num
+                continue
+
+            # ---- 패킷 유실 감지: 종료하지 않고 현재 프레임 폐기 후 재동기화 ----
+            if last_packet_num < packet_num - 1:
+                self.lostFrameCount += 1
+                print("Packet Lost! 현재 프레임 폐기 후 재동기화 (누적 유실: %d)" % self.lostFrameCount)
+                need_resync = True
+                last_packet_num = packet_num
+                # 이 패킷으로 곧바로 재정렬 시도(경계가 이 패킷 안에 있으면 바로 복구)
+                after_packet_count = (byte_count + BYTES_IN_PACKET) % BYTES_IN_FRAME
+                if after_packet_count < BYTES_IN_PACKET:
+                    recentframe = np.zeros(UINT16_IN_FRAME, dtype=np.int16)
+                    recentframe[0:after_packet_count // 2] = packet_data[(BYTES_IN_PACKET - after_packet_count) // 2:]
+                    self.recentCapNum = (byte_count + BYTES_IN_PACKET) // BYTES_IN_FRAME
+                    recentframe_collect_count = after_packet_count
+                    need_resync = False
+                continue
+
+            # ---- 정상 조립 ----
+            # 이 패킷에서 프레임이 완성되는 경우
+            if recentframe_collect_count + BYTES_IN_PACKET >= BYTES_IN_FRAME:
+                recentframe[recentframe_collect_count // 2:] = packet_data[:(BYTES_IN_FRAME - recentframe_collect_count) // 2]
+                self._store_frame(recentframe)
+                self.recentCapNum = (byte_count + BYTES_IN_PACKET) // BYTES_IN_FRAME
                 recentframe = np.zeros(UINT16_IN_FRAME, dtype=np.int16)
-                after_packet_count = (recentframe_collect_count + BYTES_IN_PACKET)%BYTES_IN_FRAME
-                recentframe[0:after_packet_count//2] = packet_data[(BYTES_IN_PACKET-after_packet_count)//2:]
+                after_packet_count = (recentframe_collect_count + BYTES_IN_PACKET) % BYTES_IN_FRAME
+                recentframe[0:after_packet_count // 2] = packet_data[(BYTES_IN_PACKET - after_packet_count) // 2:]
                 recentframe_collect_count = after_packet_count
-                lost_packets = False
             else:
-                after_packet_count = (recentframe_collect_count + BYTES_IN_PACKET)%BYTES_IN_FRAME
-                recentframe[recentframe_collect_count//2:after_packet_count//2]=packet_data
-                recentframe_collect_count = after_packet_count                
+                after_packet_count = (recentframe_collect_count + BYTES_IN_PACKET) % BYTES_IN_FRAME
+                recentframe[recentframe_collect_count // 2:after_packet_count // 2] = packet_data
+                recentframe_collect_count = after_packet_count
             last_packet_num = packet_num
     
     def getFrame(self):

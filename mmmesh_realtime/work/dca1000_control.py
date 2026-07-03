@@ -117,7 +117,7 @@ class DCA1000Control:
         time.sleep(0.1)
         self.config_fpga()
         time.sleep(0.1)
-        self.config_packet_delay(25)
+        self.config_packet_delay(50)  # 25->50: 패킷 유실('Packet Lost') 완화 (PROJECT_CONTEXT 참고)
         time.sleep(0.1)
         ok, _ = self.record_start()
         time.sleep(0.1)
