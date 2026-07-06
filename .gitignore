@@ -2,6 +2,7 @@
 *.npy
 __pycache__/
 *.pyc
+.DS_Store
 
 # 폴더 안에 중복 clone된 별도 저장소(자체 .git 보유) — 커밋 대상 아님
 InCabin-Safety-mmWave/
