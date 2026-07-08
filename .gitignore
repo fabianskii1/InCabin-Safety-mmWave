@@ -50,3 +50,10 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# CSV logs
+*.csv
+
+# Python cache
+__pycache__/
+*.pyc
