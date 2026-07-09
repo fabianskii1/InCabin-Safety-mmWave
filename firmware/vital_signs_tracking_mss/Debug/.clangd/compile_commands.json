@@ -1,0 +1,22 @@
+[
+   {
+      "directory" : "C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/Debug",
+      "command"   : "clang++ -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss\" -I\"C:/ti/mmwave_sdk_03_06_02_00-LTS\" -I\"C:/ti/mmwave_sdk_03_06_02_00-LTS/packages\" -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/mss\" -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/common\" -I\"C:/ti/ti-cgt-arm_16.9.6.LTS/include\" -D_LITTLE_ENDIAN -DSOC_XWR68XX -DSUBSYS_MSS -DDOWNLOAD_FROM_CCS -DMMWAVE_L3RAM_SIZE=0xC0000 -DDebugP_ASSERT_ENABLED -I\"C:/ti/bios_6_73_01_01/packages\" -I\"C:/ti/xdctools_3_50_08_24_core/packages\" -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/Debug/configPkg/..\" -Dxdc_target_types__=\"ti/targets/arm/elf/std.h\" -Dxdc_target_name__=R4F -Dxdc_cfg__xheader__=\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/Debug/configPkg/package/cfg/mss_mmw_per4f.h\" -xc",
+      "file"      : "C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/cli.c"
+   },
+   {
+      "directory" : "C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/Debug",
+      "command"   : "clang++ -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss\" -I\"C:/ti/mmwave_sdk_03_06_02_00-LTS\" -I\"C:/ti/mmwave_sdk_03_06_02_00-LTS/packages\" -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/mss\" -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/common\" -I\"C:/ti/ti-cgt-arm_16.9.6.LTS/include\" -D_LITTLE_ENDIAN -DSOC_XWR68XX -DSUBSYS_MSS -DDOWNLOAD_FROM_CCS -DMMWAVE_L3RAM_SIZE=0xC0000 -DDebugP_ASSERT_ENABLED -I\"C:/ti/bios_6_73_01_01/packages\" -I\"C:/ti/xdctools_3_50_08_24_core/packages\" -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/Debug/configPkg/..\" -Dxdc_target_types__=\"ti/targets/arm/elf/std.h\" -Dxdc_target_name__=R4F -Dxdc_cfg__xheader__=\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/Debug/configPkg/package/cfg/mss_mmw_per4f.h\" -xc",
+      "file"      : "C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/mss_main.c"
+   },
+   {
+      "directory" : "C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/Debug",
+      "command"   : "clang++ -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss\" -I\"C:/ti/mmwave_sdk_03_06_02_00-LTS\" -I\"C:/ti/mmwave_sdk_03_06_02_00-LTS/packages\" -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/mss\" -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/common\" -I\"C:/ti/ti-cgt-arm_16.9.6.LTS/include\" -D_LITTLE_ENDIAN -DSOC_XWR68XX -DSUBSYS_MSS -DDOWNLOAD_FROM_CCS -DMMWAVE_L3RAM_SIZE=0xC0000 -DDebugP_ASSERT_ENABLED -I\"C:/ti/bios_6_73_01_01/packages\" -I\"C:/ti/xdctools_3_50_08_24_core/packages\" -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/Debug/configPkg/..\" -Dxdc_target_types__=\"ti/targets/arm/elf/std.h\" -Dxdc_target_name__=R4F -Dxdc_cfg__xheader__=\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/Debug/configPkg/package/cfg/mss_mmw_per4f.h\" -xc",
+      "file"      : "C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/Debug/configPkg/package/cfg/mss_mmw_per4f.c"
+   },
+   {
+      "directory" : "C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/Debug",
+      "command"   : "clang++ -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss\" -I\"C:/ti/mmwave_sdk_03_06_02_00-LTS\" -I\"C:/ti/mmwave_sdk_03_06_02_00-LTS/packages\" -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/mss\" -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/common\" -I\"C:/ti/ti-cgt-arm_16.9.6.LTS/include\" -D_LITTLE_ENDIAN -DSOC_XWR68XX -DSUBSYS_MSS -DDOWNLOAD_FROM_CCS -DMMWAVE_L3RAM_SIZE=0xC0000 -DDebugP_ASSERT_ENABLED -I\"C:/ti/bios_6_73_01_01/packages\" -I\"C:/ti/xdctools_3_50_08_24_core/packages\" -I\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/Debug/configPkg/..\" -Dxdc_target_types__=\"ti/targets/arm/elf/std.h\" -Dxdc_target_name__=R4F -Dxdc_cfg__xheader__=\"C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/Debug/configPkg/package/cfg/mss_mmw_per4f.h\" -xc",
+      "file"      : "C:/Users/pc/Desktop/vital_sign/firmware/vital_signs_tracking_mss/Debug/configPkg/package/package_configPkg.c"
+   }
+]

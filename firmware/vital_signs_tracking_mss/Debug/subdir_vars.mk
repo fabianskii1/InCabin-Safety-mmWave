@@ -2,13 +2,11 @@
 # Automatically-generated file. Do not edit!
 ################################################################################
 
+SHELL = cmd.exe
+
 # Add inputs and outputs from these tool invocations to the build variables 
 CFG_SRCS += \
 ../mss_mmw.cfg 
-
-CMD_SRCS += \
-../mss_mmw_linker.cmd \
-../r4f_linker.cmd 
 
 C_SRCS += \
 ../cli.c \
@@ -22,7 +20,7 @@ GEN_FILES += \
 ./configPkg/compiler.opt 
 
 GEN_MISC_DIRS += \
-./configPkg/ 
+./configPkg 
 
 C_DEPS += \
 ./cli.d \
@@ -36,7 +34,7 @@ OBJS += \
 ./mss_main.obj 
 
 GEN_MISC_DIRS__QUOTED += \
-"configPkg/" 
+"configPkg" 
 
 OBJS__QUOTED += \
 "cli.obj" \
@@ -47,8 +45,8 @@ C_DEPS__QUOTED += \
 "mss_main.d" 
 
 GEN_FILES__QUOTED += \
-"configPkg/linker.cmd" \
-"configPkg/compiler.opt" 
+"configPkg\linker.cmd" \
+"configPkg\compiler.opt" 
 
 C_SRCS__QUOTED += \
 "../cli.c" \

@@ -14,4 +14,5 @@
 	<templateProperties value="id=vital_signs_tracking_mss.projectspec.vital_signs_tracking_mss,type=rtsc,products=com.ti.rtsc.SYSBIOS:6.73.01.01;com.ti.MMWAVE_SDK:3.4.0.03;,xdcToolsVersion=3.50.08.24_core,target=ti.targets.arm.elf.R4F,platform=ti.platforms.cortexR:IWR68XX:false:200,endianness=little,output_format=elf,buildProfile=release,configuroOptions=--compileOptions &quot;--enum_type=int &quot; "/>
 	<origin value="/home/dirk/ti/mmwave_automotive_toolbox_3_6_0/labs/incabinsensing/occupancy_plus_vital_signs/src/vital_signs_tracking_mss.projectspec"/>
 	<filesToOpen value=""/>
+	<activeTargetConfiguration value="targetConfigs/IWR6843.ccxml"/>
 </projectOptions>

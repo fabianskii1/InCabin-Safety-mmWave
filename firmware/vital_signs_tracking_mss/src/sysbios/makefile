@@ -6,25 +6,25 @@
 #  template: ti.sysbios/makefile.xdt
 #  target: ti.targets.arm.elf.R4F
 
-vpath % /home/dirk/ti/bios_6_73_01_01/packages/ti/sysbios/
-vpath %.c /home/dirk/ti/xdctools_3_50_08_24_core/packages/
+vpath % C:/ti/bios_6_73_01_01/packages/ti/sysbios/
+vpath %.c C:/ti/xdctools_3_50_08_24_core/packages/
 
-XOPTS = -I"/home/dirk/ti/xdctools_3_50_08_24_core/packages/" -Dxdc_target_types__=/home/dirk/ti/bios_6_73_01_01/packages/ti/targets/arm/elf/std.h -Dxdc_target_name__=R4F
+XOPTS = -I"C:/ti/xdctools_3_50_08_24_core/packages/" -Dxdc_target_types__=C:/ti/bios_6_73_01_01/packages/ti/targets/arm/elf/std.h -Dxdc_target_name__=R4F
 
 BIOS_DEFS =  -Dti_sysbios_BIOS_swiEnabled__D=TRUE -Dti_sysbios_BIOS_taskEnabled__D=TRUE -Dti_sysbios_BIOS_clockEnabled__D=TRUE -Dti_sysbios_BIOS_runtimeCreatesEnabled__D=TRUE -Dti_sysbios_knl_Task_moduleStateCheckFlag__D=FALSE -Dti_sysbios_knl_Task_objectCheckFlag__D=FALSE -Dti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS -Dti_sysbios_knl_Swi_DISABLE_ALL_HOOKS -Dti_sysbios_BIOS_smpEnabled__D=FALSE -Dti_sysbios_BIOS_mpeEnabled__D=FALSE -Dti_sysbios_Build_useHwiMacros -Dti_sysbios_knl_Swi_numPriorities__D=16 -Dti_sysbios_knl_Task_deleteTerminatedTasks__D=FALSE -Dti_sysbios_knl_Task_numPriorities__D=16 -Dti_sysbios_knl_Task_checkStackFlag__D=TRUE -Dti_sysbios_knl_Task_initStackFlag__D=TRUE -Dti_sysbios_knl_Task_DISABLE_ALL_HOOKS -Dti_sysbios_knl_Clock_TICK_SOURCE=ti_sysbios_knl_Clock_TickSource_TIMER -Dti_sysbios_knl_Clock_TICK_MODE=ti_sysbios_knl_Clock_TickMode_PERIODIC -Dti_sysbios_hal_Core_delegate_getId=ti_sysbios_family_arm_v7r_tms570_Core_getId__E -Dti_sysbios_hal_Core_delegate_interruptCore=ti_sysbios_family_arm_v7r_tms570_Core_interruptCore__E -Dti_sysbios_hal_Core_delegate_lock=ti_sysbios_family_arm_v7r_tms570_Core_lock__E -Dti_sysbios_hal_Core_delegate_unlock=ti_sysbios_family_arm_v7r_tms570_Core_unlock__E -Dti_sysbios_hal_Core_numCores__D=1 -Dti_sysbios_family_arm_v7r_tms570_Core_numCores__D=1 -Dti_sysbios_utils_Load_taskEnabled__D=TRUE -Dti_sysbios_utils_Load_swiEnabled__D=FALSE -Dti_sysbios_utils_Load_hwiEnabled__D=FALSE -Dti_sysbios_family_arm_v7r_vim_Hwi_dispatcherSwiSupport__D=TRUE -Dti_sysbios_family_arm_v7r_vim_Hwi_dispatcherTaskSupport__D=TRUE -Dti_sysbios_family_arm_v7r_vim_Hwi_dispatcherAutoNestingSupport__D=TRUE -Dti_sysbios_family_arm_v7r_vim_Hwi_dispatcherIrpTrackingSupport__D=TRUE -Dti_sysbios_knl_Semaphore_supportsEvents__D=FALSE -Dti_sysbios_knl_Semaphore_supportsPriority__D=TRUE 
 
 CCOPTS = --float_support=vfpv3d16 --endian=little -mv7R4 --abi=eabi -q -ms --opt_for_speed=2  --program_level_compile -o3 -g  --enum_type=int  -Dti_sysbios_family_arm_exc_Exception_enableDecode__D=TRUE -Dti_sysbios_knl_Clock_stopCheckNext__D=FALSE -Dti_sysbios_family_arm_v7r_vim_Hwi_lockstepDevice__D=TRUE -Dti_sysbios_family_arm_v7r_vim_Hwi_errataInitEsm__D=TRUE -Dti_sysbios_family_arm_v7r_vim_Hwi_resetVIM__D=TRUE -Dti_sysbios_hal_Core_numCores__D=1 -Dti_sysbios_knl_Task_minimizeLatency__D=FALSE
 
-BIOS_INC = -I"/home/dirk/ti/bios_6_73_01_01/packages/"
+BIOS_INC = -I"C:/ti/bios_6_73_01_01/packages/"
 ANNEX_INCS = 
-INCS = $(BIOS_INC) $(ANNEX_INCS) -I"/home/dirk/ti/bios_6_73_01_01/packages/" -I"/home/dirk/ti/xdctools_3_50_08_24_core/packages/" -I"../" -I"/packages//"  -I/home/dirk/ti/ti-cgt-arm_16.9.6.LTS/include 
+INCS = $(BIOS_INC) $(ANNEX_INCS) -I"C:/ti/bios_6_73_01_01/packages/" -I"C:/ti/xdctools_3_50_08_24_core/packages/" -I"../" -I"/packages//"  -IC:/ti/ti-cgt-arm_16.9.6.LTS/include 
 
-CC = /home/dirk/ti/ti-cgt-arm_16.9.6.LTS/bin/armcl -c $(CCOPTS)
-ASM = /home/dirk/ti/ti-cgt-arm_16.9.6.LTS/bin/armcl -c $(CCOPTS)
-AR = /home/dirk/ti/ti-cgt-arm_16.9.6.LTS/bin/armar rq
+CC = C:/ti/ti-cgt-arm_16.9.6.LTS/bin/armcl -c $(CCOPTS)
+ASM = C:/ti/ti-cgt-arm_16.9.6.LTS/bin/armcl -c $(CCOPTS)
+AR = C:/ti/ti-cgt-arm_16.9.6.LTS/bin/armar rq
 
-DEL = rm -f
-CP = cp -f
+DEL = C:/ti/xdctools_3_50_08_24_core/packages/../bin/rm -f
+CP = C:/ti/xdctools_3_50_08_24_core/packages/../bin/cp -f
 
 define RM
 	$(if $(wildcard $1),$(DEL) $1,:)
@@ -74,5 +74,5 @@ sysbios.aer4f: BIOS.obj arm_IntrinsicsSupport_asm.obj arm_TaskSupport_asm.obj vi
 
 
 clean:
-	@$(DEL) ../makefile.libs
+	@$(DEL) ..\makefile.libs
 	@-$(call RM, *)

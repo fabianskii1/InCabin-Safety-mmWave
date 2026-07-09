@@ -2,13 +2,11 @@
 # Automatically-generated file. Do not edit!
 ################################################################################
 
+SHELL = cmd.exe
+
 # Add inputs and outputs from these tool invocations to the build variables 
 CFG_SRCS += \
 ../dss_mmw.cfg 
-
-CMD_SRCS += \
-../c674x_68xx_linker.cmd \
-../dss_68xx_linker.cmd 
 
 C_SRCS += \
 ../dss_config_edma_util.c \
@@ -28,7 +26,7 @@ GEN_FILES += \
 ./configPkg/compiler.opt 
 
 GEN_MISC_DIRS += \
-./configPkg/ 
+./configPkg 
 
 C_DEPS += \
 ./dss_config_edma_util.d \
@@ -54,7 +52,7 @@ OBJS += \
 ./xwr16xx_cache.oe674 
 
 GEN_MISC_DIRS__QUOTED += \
-"configPkg/" 
+"configPkg" 
 
 OBJS__QUOTED += \
 "dss_config_edma_util.oe674" \
@@ -77,8 +75,8 @@ C_DEPS__QUOTED += \
 "xwr16xx_cache.d" 
 
 GEN_FILES__QUOTED += \
-"configPkg/linker.cmd" \
-"configPkg/compiler.opt" 
+"configPkg\linker.cmd" \
+"configPkg\compiler.opt" 
 
 C_SRCS__QUOTED += \
 "../dss_config_edma_util.c" \
