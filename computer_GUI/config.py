@@ -2,7 +2,7 @@ import re
 
 def read_config_file(path):
     res = []
-    with open(path, 'r') as f:
+    with open(path, 'r', encoding='utf-8') as f:
         for line in f:
             res.append(line)
     return res

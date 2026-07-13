@@ -9,7 +9,8 @@ from datetime import datetime
 import time
 
 def main():
-    parser = argparse.ArgumentParser(description='Driver-seat-only vital signs (filters to a fixed spatial window)')
+    parser = argparse.ArgumentParser(
+        description='Rearview-mirror driver vital signs (soft-track + 12s RR/HR window)')
     parser.add_argument('userPort', help='user serial port of the TI chip')
     parser.add_argument('dataPort', help='data serial port of the TI chip')
     parser.add_argument('configFile', help='the config file send to the TI chip')
@@ -17,6 +18,8 @@ def main():
 
     cfgFile = config.read_config_file(args.configFile)
     cfgFileParsed = config.parse_config_file(cfgFile)
+    print('Config:', args.configFile)
+    print('zoneDef from cfg:', cfgFileParsed.get('zoneDef'))
 
     serialUser = serialhelper.SerialHelper(args.userPort, 115200)
     serialData = serialhelper.SerialHelper(args.dataPort, 921600)
