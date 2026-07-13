@@ -40,9 +40,19 @@ RR_HIST = 7
 MAX_RR_STEP = 2
 MAX_HR_STEP = 5
 SPIKE_MAD = 3.5
-# 숨 참음 판정: 최근 호흡 파형 RMS가 이보다 작으면 비호흡
-BREATH_ACTIVE_RMS = 0.04
-BREATH_HOLD_FRAMES = 10         # ~2초 연속 낮으면 hold
+# 무호흡 감지 균형: 오탐(호흡 중 HOLD)과 미탐(무호흡 못 잡음) 절충
+SHORT_RMS_FRAMES = 6            # ~1.2초
+SPEC_FRAMES = 25                # ~5초
+BREATH_ACTIVE_RMS = 0.035
+BREATH_DELTA_MIN = 0.018
+BREATH_DROP_RATIO = 0.40        # 베이스라인 대비 40% 이하일 때만 붕괴
+BREATH_PTP_MIN = 0.07
+BREATH_BAND_DROP = 0.40
+BREATH_HOLD_FRAMES = 5          # ~1.0초 quiet → HOLD
+BREATH_RESUME_FRAMES = 2        # ~0.4초 움직임이면 바로 복귀
+APNEA_ALERT_SEC = 3.0
+BASELINE_ALPHA = 0.12
+MIN_BASELINE = 0.03
 
 
 class PlotHelper:
@@ -103,8 +113,16 @@ class PlotHelper:
         self.rrHist = []
         self.hrHist = []
         self.breathRmsWin = []
+        self.breathSpecWin = []
         self.holdCount = 0
-        self.breathing = False
+        self.resumeCount = 0
+        self.breathing = True
+        self.apneaSec = 0.0
+        self.emergency = False
+        self.breathBaseline = None      # 정상 호흡 RMS
+        self.bandBaseline = None        # 정상 호흡대역 절대 에너지
+        self.lastBreathBand = 0.0
+        self.lastBandPower = 0.0
 
         plt.subplots_adjust(hspace=0.35, wspace=0.5, top=0.9, bottom=0.08)
 
@@ -208,18 +226,107 @@ class PlotHelper:
         mad = float(np.median(np.abs(recent - med))) + 1e-6
         return abs(x - med) > SPIKE_MAD * mad
 
+    def _breath_band_stats(self, samples):
+        # (비율, 절대 에너지). 비율만 쓰면 무호흡 노이즈에서도 비율이 높게 나올 수 있음.
+        n = len(samples)
+        if n < 16:
+            return None, None
+        x = np.asarray(samples, dtype=float)
+        x = x - x.mean()
+        if np.std(x) < 1e-6:
+            return 0.0, 0.0
+        mag = np.abs(np.fft.rfft(x * np.hanning(n)))
+        freqs = np.fft.rfftfreq(n, d=FRAME_DT)
+        if mag.size <= 1:
+            return 0.0, 0.0
+        total = float(mag[1:].sum())
+        band = (freqs >= BREATH_HZ[0]) & (freqs <= BREATH_HZ[1])
+        power = float(mag[band].sum())
+        ratio = (power / total) if total > 0 else 0.0
+        return ratio, power
+
     def _update_breath_activity(self, breath):
-        # 최근 호흡 파형 RMS로 실제 호흡 여부 판단 (숨 참으면 False)
+        # 무호흡 우선: quiet는 OR 조건(하나라도 만족하면 후보),
+        # 호흡 복귀(active)는 AND로 엄격하게.
         self.breathRmsWin.append(breath)
-        if len(self.breathRmsWin) > 25:  # ~5s
-            self.breathRmsWin = self.breathRmsWin[-25:]
+        if len(self.breathRmsWin) > SHORT_RMS_FRAMES:
+            self.breathRmsWin = self.breathRmsWin[-SHORT_RMS_FRAMES:]
+        self.breathSpecWin.append(breath)
+        if len(self.breathSpecWin) > SPEC_FRAMES:
+            self.breathSpecWin = self.breathSpecWin[-SPEC_FRAMES:]
+
         x = np.asarray(self.breathRmsWin, dtype=float)
-        rms = float(np.sqrt(np.mean((x - x.mean()) ** 2))) if len(x) >= 5 else 0.0
-        if rms < BREATH_ACTIVE_RMS:
-            self.holdCount += 1
+        if len(x) >= 3:
+            rms = float(np.sqrt(np.mean((x - x.mean()) ** 2)))
+            ptp = float(x.max() - x.min())
         else:
-            self.holdCount = 0
-        self.breathing = self.holdCount < BREATH_HOLD_FRAMES
+            rms = abs(float(breath))
+            ptp = abs(float(breath))
+
+        delta = 0.0 if self.prevBreath is None else abs(breath - self.prevBreath)
+        ratio, power = self._breath_band_stats(self.breathSpecWin)
+        self.lastBreathBand = 0.0 if ratio is None else ratio
+        self.lastBandPower = 0.0 if power is None else power
+
+        # 호흡 중이고 파형이 뚜렷할 때만 베이스라인 갱신
+        strong_now = (rms >= BREATH_ACTIVE_RMS and ptp >= BREATH_PTP_MIN
+                      and (ratio is None or ratio >= 0.12))
+        if self.breathing and strong_now:
+            if self.breathBaseline is None:
+                self.breathBaseline = max(rms, MIN_BASELINE)
+            else:
+                self.breathBaseline = ((1 - BASELINE_ALPHA) * self.breathBaseline
+                                       + BASELINE_ALPHA * rms)
+                self.breathBaseline = max(self.breathBaseline, MIN_BASELINE)
+            if power is not None and power > 0:
+                if self.bandBaseline is None:
+                    self.bandBaseline = power
+                else:
+                    self.bandBaseline = ((1 - BASELINE_ALPHA) * self.bandBaseline
+                                         + BASELINE_ALPHA * power)
+
+        base = self.breathBaseline
+        bandBase = self.bandBaseline
+
+        # --- quiet: 진폭 붕괴가 확실할 때만 (OR만 쓰면 호흡 중 오탐) ---
+        abs_quiet = (rms < BREATH_ACTIVE_RMS) and (delta < BREATH_DELTA_MIN) and (ptp < BREATH_PTP_MIN)
+        collapsed = (base is not None) and (rms < base * BREATH_DROP_RATIO) and (ptp < BREATH_PTP_MIN)
+        weak_band = (bandBase is not None and power is not None
+                     and power < bandBase * BREATH_BAND_DROP
+                     and rms < (base * 0.6 if base is not None else BREATH_ACTIVE_RMS * 1.5))
+        # 절대 quiet 이거나, (붕괴 + 약밴드) — 호흡 사이 짧은 휴식만으로는 잘 안 걸림
+        quiet = abs_quiet or (collapsed and weak_band) or (collapsed and delta < BREATH_DELTA_MIN)
+
+        # --- active: 조금만 움직여도 호흡으로 복귀 (오탐 HOLD 빨리 해제) ---
+        active = (rms >= BREATH_ACTIVE_RMS) or (ptp >= BREATH_PTP_MIN) or (delta >= BREATH_DELTA_MIN)
+        if base is not None and rms >= base * 0.5:
+            active = True
+
+        if self.breathing:
+            if quiet:
+                self.holdCount += 1
+                self.resumeCount = 0
+                if self.holdCount >= BREATH_HOLD_FRAMES:
+                    self.breathing = False
+                    self.holdCount = 0
+            else:
+                # 호흡 흔들림이 있으면 카운터 즉시 리셋 → 중간중간 HOLD 오탐 감소
+                self.holdCount = 0
+        else:
+            if active:
+                self.resumeCount += 1
+                self.holdCount = 0
+                if self.resumeCount >= BREATH_RESUME_FRAMES:
+                    self.breathing = True
+                    self.resumeCount = 0
+                    self.apneaSec = 0.0
+                    self.emergency = False
+            else:
+                self.resumeCount = 0
+                self.apneaSec += FRAME_DT
+                if self.apneaSec >= APNEA_ALERT_SEC:
+                    self.emergency = True
+
         return rms
 
     def _fft_bpm(self, samples, band):
@@ -315,8 +422,16 @@ class PlotHelper:
         self.rrHist = []
         self.hrHist = []
         self.breathRmsWin = []
+        self.breathSpecWin = []
         self.holdCount = 0
-        self.breathing = False
+        self.resumeCount = 0
+        self.breathing = True
+        self.apneaSec = 0.0
+        self.emergency = False
+        self.breathBaseline = None
+        self.bandBaseline = None
+        self.lastBreathBand = 0.0
+        self.lastBandPower = 0.0
         self.prevBreath = None
         self.marker.set_data([], [])
 
@@ -354,8 +469,16 @@ class PlotHelper:
                     self.rrHist = []
                     self.hrHist = []
                     self.breathRmsWin = []
+                    self.breathSpecWin = []
                     self.holdCount = 0
-                    self.breathing = False
+                    self.resumeCount = 0
+                    self.breathing = True
+                    self.apneaSec = 0.0
+                    self.emergency = False
+                    self.breathBaseline = None
+                    self.bandBaseline = None
+                    self.lastBreathBand = 0.0
+                    self.lastBandPower = 0.0
                     self.prevBreath = None
             else:
                 self.acq = None
@@ -386,17 +509,18 @@ class PlotHelper:
                 fwHR = int(np.floor(vitalSigns[base + 3]))
                 fwRR = int(np.floor(vitalSigns[base + 4]))
 
+                # 무호흡 판정은 prevBreath 갱신 전에 (프레임 변화량 사용)
+                rms = self._update_breath_activity(breath)
+
                 if self.prevBreath is not None:
                     d = breath - self.prevBreath
                     if abs(d) > 0.35:
                         breath = self.prevBreath + 0.35 * np.sign(d)
                 self.prevBreath = breath
 
-                rms = self._update_breath_activity(breath)
-
                 # 심박 파형은 항상 표시
                 self.lastHeart = heart
-                # 숨 참으면 호흡 파형 평탄 처리 (노이즈를 호흡으로 안 보이게)
+                # 숨 참으면 호흡 파형 평탄 처리
                 if self.breathing:
                     self.lastBreath = breath
                 else:
@@ -420,7 +544,6 @@ class PlotHelper:
                     elif fwRR > 0 and len(self.rrWin) < RATE_MIN:
                         self.lastRR = fwRR
                 else:
-                    # 숨 참음: RR 표시 0, 윈도우 서서히 비움
                     self.lastRR = 0
                     if len(self.rrWin) > 0:
                         self.rrWin = self.rrWin[1:]
@@ -431,9 +554,15 @@ class PlotHelper:
                 elif fwHR > 0 and len(self.hrWin) < RATE_MIN:
                     self.lastHR = fwHR
 
-                status = 'soft {:.0f}/{:.0f}s{} rms:{:.3f}'.format(
-                    len(self.rrWin) * FRAME_DT, RATE_WINDOW * FRAME_DT,
-                    '' if self.breathing else ' HOLD', rms)
+                if self.emergency:
+                    status = '!! NO BREATH {:.1f}s !!'.format(self.apneaSec)
+                elif not self.breathing:
+                    status = 'HOLD {:.1f}s rms:{:.3f} band:{:.2f}'.format(
+                        self.apneaSec, rms, self.lastBreathBand)
+                else:
+                    status = 'soft {:.0f}/{:.0f}s rms:{:.3f} band:{:.2f}'.format(
+                        len(self.rrWin) * FRAME_DT, RATE_WINDOW * FRAME_DT,
+                        rms, self.lastBreathBand)
 
         self.breathBuf[self.fc] = self.lastBreath if present else 0.0
         self.heartBuf[self.fc] = self.lastHeart if present else 0.0
@@ -441,9 +570,17 @@ class PlotHelper:
         self.gHeart.set_ydata(self.heartBuf)
 
         if present:
-            title = 'DRIVER  HR:{}  RR:{}  [{}]'.format(
-                self.lastHR, self.lastRR, status)
-            color = 'green' if len(self.rrWin) >= RATE_MIN else 'darkorange'
+            if self.emergency:
+                title = 'EMERGENCY  NO BREATH {:.1f}s  HR:{}  [{}]'.format(
+                    self.apneaSec, self.lastHR, status)
+                color = 'red'
+            elif not self.breathing:
+                title = 'DRIVER  HR:{}  RR:0  [{}]'.format(self.lastHR, status)
+                color = 'darkorange'
+            else:
+                title = 'DRIVER  HR:{}  RR:{}  [{}]'.format(
+                    self.lastHR, self.lastRR, status)
+                color = 'green' if len(self.rrWin) >= RATE_MIN else 'darkorange'
         else:
             title = 'Searching driver chest... [{}]'.format(status)
             color = 'gray'
