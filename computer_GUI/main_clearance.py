@@ -35,9 +35,12 @@ def main():
     monitor = clearance.ClearanceMonitor(numZones, fps)
     plots = plot.PlotHelper(cfgFileParsed.get('zoneDef'), numZones)
 
+    zoneDef = cfgFileParsed.get('zoneDef')
     databuffer = bytearray()
     startTime = time.time()
     extractedValue = np.zeros(20)
+    updatedZones = np.zeros((4, 2))
+    personsDetected = 0
     rangeAzimuth = np.zeros((cfgFileParsed['numRangeBins'], cfgFileParsed['numAngleBins']))
     stateLog = []  # (time, 존별 state 코드) CSV 로그
 
@@ -65,9 +68,6 @@ def main():
             if magicNumber:
                 header, index = utils.getHeader(databuffer, 0)
 
-                # 프레임마다 점유 정보를 초기화 (이전 프레임 값이 남지 않도록)
-                decisionValue = np.zeros(4, dtype=int)
-
                 for i in range(header['numTLVs']):
                     tlv, index = utils.getTlv(databuffer, index)
 
@@ -79,11 +79,9 @@ def main():
                             rangeAzimuth, index = utils.getOccupDemoShortHeatMap(databuffer, index, cfgFileParsed['numRangeBins'], cfgFileParsed['numAngleBins'])
                         elif cfgFileParsed['rangeAzimuthHeatMap'] == 8:
                             rangeAzimuth, index = utils.getOccupDemoByteHeatMap(databuffer, index, cfgFileParsed['numRangeBins'], cfgFileParsed['numAngleBins'])
-                    # MMWDEMO_UART_MSG_OD_DEMO_DECISION
+                    # MMWDEMO_UART_MSG_OD_DEMO_DECISION (이 포크에선 CPD 비활성 — 피크 매핑으로 대체)
                     elif tlv['type'] == 9:
-                        decision, index = utils.getOccupDemoDecision(databuffer, index, cfgFileParsed['numZones'])
-                        for z in range(min(len(decision), 4)):
-                            decisionValue[z] = decision[z]
+                        _decision, index = utils.getOccupDemoDecision(databuffer, index, cfgFileParsed['numZones'])
                     # VS_OUTPUT_HEART_BREATHING_RATES
                     elif tlv['type'] == 10:
                         extractedValue, index = utils.getVitalSignsDemoHeartBreathingRate(databuffer, index)
@@ -91,7 +89,7 @@ def main():
                     elif tlv['type'] == 11:
                         index = utils.dumpRowNoiseValues(databuffer, index, 64)
                     elif tlv['type'] == 12:
-                        zoneCount, updatedZones, index = utils.getUpdatedZones(databuffer, index)
+                        personsDetected, updatedZones, index = utils.getUpdatedZones(databuffer, index)
                     # MMWDEMO_UART_MSG_STATS
                     elif tlv['type'] == 6:
                         statsInfo, index = utils.getStatsInfo(databuffer, index)
@@ -99,15 +97,24 @@ def main():
                     else:
                         print('Unprocessed TLV:', tlv['type'])
 
+                # 피크 슬롯(방위 순) → zoneDef 좌석으로 재매핑 (히트맵 품질+안정성 필터)
+                seatDecision, seatVitals = clearance.remap_peaks_to_seats(
+                    zoneDef, updatedZones, personsDetected, extractedValue,
+                    heatmap=rangeAzimuth, peakFilter=monitor.peakFilter)
+
                 now = time.time() - startTime
-                results = monitor.update(decisionValue, extractedValue, now=now)
+                results = monitor.update(seatDecision, seatVitals, now=now)
 
                 # ECU 연동 지점: 전 존 EMPTY 확정일 때만 폴딩 허용 신호
                 foldOk = monitor.all_fold_permitted()
 
                 stateLog.append([now] + [stateCode[r['state']] for r in results])
-                plots.update(rangeAzimuth, extractedValue, results, foldOk)
+                plots.update(rangeAzimuth, seatVitals, results, foldOk, updatedZones, personsDetected)
                 databuffer = databuffer[index:]
+            else:
+                # 패킷 대기 중에도 GUI 응답 유지
+                plots.process_events()
+                time.sleep(0.001)
     except KeyboardInterrupt:
         np.savetxt('clearance_log_' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.csv',
                    np.array(stateLog), delimiter=',', fmt='%.2f',
