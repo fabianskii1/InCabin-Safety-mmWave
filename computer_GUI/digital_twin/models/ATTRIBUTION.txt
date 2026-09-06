@@ -1,0 +1,7 @@
+Car Interior (SketchUp 7 Collada export)
+Source zip: Car+Interior.zip
+Texture converted BMP -> PNG for the browser.
+
+Files:
+  models/car_interior/model.dae
+  models/car_interior/model/Knyt_Ald1.png
