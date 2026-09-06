@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Driver Digital Twin</title>
+  <link rel="stylesheet" href="css/twin.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.1/build/three.module.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <nav class="modes">
+    <a class="active" href="/">비상 회피</a>
+    <a href="/cabin.html">시트 폴딩 잠금</a>
+  </nav>
+  <div id="view"></div>
+
+  <div class="hud top cabin-top">
+    <div class="card">
+      <div class="title">DIGITAL TWIN</div>
+      <div class="headline" id="phaseLabel">정상 주행</div>
+      <div class="badge ok" id="statusBadge">NORMAL</div>
+    </div>
+    <div class="card stats stats-5">
+      <div class="stat"><div class="k">속도</div><div class="v" id="speedVal">80</div></div>
+      <div class="stat"><div class="k">전방 간격</div><div class="v" id="gapVal">—</div></div>
+      <div class="stat"><div class="k">호흡</div><div class="v" id="rrVal">14</div></div>
+      <div class="stat"><div class="k">심박</div><div class="v" id="hrVal">72</div></div>
+      <div class="stat"><div class="k">무호흡</div><div class="v" id="apneaVal">0.0s</div></div>
+    </div>
+  </div>
+
+  <div class="hud bottom">
+    <div class="card actions">
+      <button id="btnNormal">정상 주행</button>
+      <button id="btnDanger" class="primary">긴급 시연</button>
+      <button id="btnReset" class="ghost">리셋</button>
+    </div>
+    <div class="card help">
+      버튼 또는 키 <b>D</b> = 긴급, <b>N</b> = 정상, <b>R</b> = 리셋.<br>
+      긴급 시 주변 차량과 간격을 확인해 감속 → 우측 차선 → 갓길로 정차합니다.<br>
+      센서 연동: 이 페이지를 켠 채 <code>main_driver.py</code>를 실행하면
+      실측 DANGER 시 같은 시나리오가 재생됩니다.
+    </div>
+  </div>
+
+  <script type="module" src="js/twin.js?v=traffic3"></script>
+</body>
+</html>
