@@ -26,6 +26,12 @@ _state = {
     'apnea_sec': 0.0,
     'detail': '데모 대기',
     'cmd': None,
+    'clearance': {                     # <--- 추가
+        'L': False,
+        'C': False,
+        'R': False,
+        'fold_permit': True,
+    }
 }
 
 
@@ -88,6 +94,9 @@ class TwinHandler(SimpleHTTPRequestHandler):
         if not isinstance(incoming, dict):
             incoming = {}
         with _lock:
+            if 'clearance' in incoming:  # <--- clearance 데이터 처리 추가(아래 3줄)
+                _state['clearance'] = incoming['clearance']
+                _state['source'] = incoming.get('source', 'gtrack_clearance')
             _state.update({k: incoming[k] for k in incoming if k in _state or k == 'cmd'})
             if 'cmd' not in incoming:
                 status = str(_state.get('status', 'NORMAL')).upper()

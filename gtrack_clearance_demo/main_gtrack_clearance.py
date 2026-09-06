@@ -28,6 +28,8 @@ import serialhelper                    # noqa: E402  (read-only 재사용)
 from track_parser import FrameParser   # noqa: E402
 import clearance_gtrack as cg          # noqa: E402
 
+from clearance_publisher import ClearancePublisher  # <--- 추가
+
 
 def main():
     ap = argparse.ArgumentParser(description='GTRACK 좌표 기반 좌석 clearance 데모')
@@ -67,6 +69,8 @@ def main():
 
     parser = FrameParser()
     monitor = cg.ClearanceMonitor(seats)
+    publisher = ClearancePublisher()  # <--- 추가
+
     startT = time.time()
     lastPrint = 0.0
     lastTracks = []
@@ -84,10 +88,12 @@ def main():
             for tracks in frames:
                 lastTracks = tracks
                 results = monitor.update(tracks, now)
+                publisher.publish(results, monitor.fold_permitted(now))  # <--- 추가
                 if plot is not None:
                     plot.update(tracks, results, monitor.fold_permitted(now))
             if results is None:
                 results = monitor.update(lastTracks, now)   # 프레임 없어도 시간 진행(하차 확정)
+                publisher.publish(results, monitor.fold_permitted(now))  # <--- 추가
                 if plot is not None:
                     plot.update(lastTracks, results, monitor.fold_permitted(now))
 

@@ -5,14 +5,15 @@ import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 
 const FOLD_ANGLE = 1.48;
 const SEATS = [
-  { id: 'L', name: '뒷좌-좌', x: -0.36, w: 0.50 },
+  // 렌더링 좌우 반전: 뒷좌-좌(L)를 화면 오른쪽(+x), 뒷좌-우(R)를 왼쪽(-x)에 표시
+  { id: 'L', name: '뒷좌-좌', x: 0.36, w: 0.50 },
   { id: 'C', name: '뒷좌-중', x: 0.00, w: 0.34 },
-  { id: 'R', name: '뒷좌-우', x: 0.36, w: 0.50 },
+  { id: 'R', name: '뒷좌-우', x: -0.36, w: 0.50 },
 ];
 const sitPose = {
-  L: { x: -0.36, y: 0.04, z: -0.70 },
+  L: { x: 0.36, y: 0.04, z: -0.70 },
   C: { x: 0.00, y: 0.04, z: -0.70 },
-  R: { x: 0.36, y: 0.04, z: -0.70 },
+  R: { x: -0.36, y: 0.04, z: -0.70 },
 };
 let modelFold = null;
 
@@ -23,7 +24,16 @@ const ui = {
   stL: document.getElementById('stL'),
   stC: document.getElementById('stC'),
   stR: document.getElementById('stR'),
+  stP: document.getElementById('stP'),
 };
+
+let passengerOccupied = false;   // 조수석 점유(폴딩 무관, 표시용)
+function setPassenger(v) {
+  passengerOccupied = v;
+  if (typeof frontR !== 'undefined' && frontR.userData && frontR.userData.person) {
+    frontR.userData.person.visible = v;   // 3D 조수석 탑승자 표시
+  }
+}
 
 const occupied = { L: true, C: false, R: false };
 const folded = { L: 0, C: 0, R: 0 };
@@ -304,11 +314,12 @@ function makeSeat(color, withPerson) {
 
 buildCabin();
 
+// 렌더링 좌우 반전: 운전석(frontL)은 오른쪽(+x), 조수석(frontR)은 왼쪽(-x)으로 교환
 const frontL = makeSeat(0x2f3a48, true);
-frontL.position.set(-0.38, 0, 0.55);
+frontL.position.set(0.38, 0, 0.55);
 scene.add(frontL);
 const frontR = makeSeat(0x2f3a48, false);
-frontR.position.set(0.38, 0, 0.55);
+frontR.position.set(-0.38, 0, 0.55);
 scene.add(frontR);
 
 const bench = new THREE.Group();
@@ -672,7 +683,7 @@ function placePeopleOnRearBench(interior) {
     const alongX = rw >= rd;
     const minW = alongX ? rb.min.x : rb.min.z;
     const maxW = alongX ? rb.max.x : rb.max.z;
-    const t = [0.05, 0.50, 0.88];
+    const t = [0.88, 0.50, 0.05];   // 좌우 반전: L→오른쪽, R→왼쪽
     SEATS.forEach((spec, i) => {
       occupancyOnly(rear[spec.id]);
       const w = minW + (maxW - minW) * t[i];
@@ -696,7 +707,7 @@ function placePeopleOnRearBench(interior) {
   const lengthIsZ = size.z >= size.x;
   const ySit = box.min.y + Math.min(0.38, size.y * 0.26);
   const lane = (lengthIsZ ? size.x : size.z) * 0.20;
-  const lanes = [-lane, 0, lane];
+  const lanes = [lane, 0, -lane];   // 좌우 반전: L→오른쪽, R→왼쪽
 
   SEATS.forEach((spec, i) => {
     occupancyOnly(rear[spec.id]);
@@ -817,6 +828,7 @@ function updateHud() {
   }
   const allowed = foldAllowed();
   ui.foldVal.textContent = allowed ? '허용' : '차단';
+  if (ui.stP) ui.stP.textContent = passengerOccupied ? '탑승' : '비움';
   ui.foldLabel.textContent = message;
   ui.foldBadge.textContent = allowed ? 'EMPTY · FOLD OK' : 'OCCUPIED · LOCK';
   ui.foldBadge.className = 'badge ' + (allowed ? 'ok' : 'danger');
@@ -923,3 +935,31 @@ function tick() {
   requestAnimationFrame(tick);
 }
 tick();
+
+// cabin.js 최하단 tick(); 바로 아래에 수신 루프 추가
+async function pollClearanceState() {
+  try {
+    const res = await fetch('/state');
+    const data = await res.json();
+    if (data.clearance) {
+      const c = data.clearance;
+      // 좌석 점유 상태 반영
+      setOccupied('L', Boolean(c.L));
+      setOccupied('C', Boolean(c.C));
+      setOccupied('R', Boolean(c.R));
+      setPassenger(Boolean(c.passenger));
+
+      // 폴딩 상태 반영 (허용 시 폴딩 시도, 차단 시 원복)
+      if (c.fold_permit) {
+        tryFold();
+      } else {
+        unfoldAll();
+      }
+    }
+  } catch (err) {
+    // 백엔드 미실행 시 무시
+  }
+}
+
+// 150ms 마다 서버의 최신 Clearance 상태를 가져옴
+setInterval(pollClearanceState, 150);
