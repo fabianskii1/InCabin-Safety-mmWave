@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cabin Fold Lock Twin</title>
+  <link rel="stylesheet" href="css/twin.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.1/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.1/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <nav class="modes">
+    <a href="/">비상 회피</a>
+    <a class="active" href="/cabin.html">시트 폴딩 잠금</a>
+  </nav>
+  <div id="view"></div>
+
+  <div class="hud top cabin-top">
+    <div class="card">
+      <div class="title">CABIN TWIN</div>
+      <div class="headline" id="foldLabel">뒷좌석 폴딩 대기</div>
+      <div class="badge warn" id="foldBadge">UNKNOWN</div>
+    </div>
+    <div class="card stats">
+      <div class="stat"><div class="k">조수석</div><div class="v" id="stP">비움</div></div>
+      <div class="stat"><div class="k">뒷좌-좌</div><div class="v" id="stL">비움</div></div>
+      <div class="stat"><div class="k">뒷좌-중</div><div class="v" id="stC">비움</div></div>
+      <div class="stat"><div class="k">뒷좌-우</div><div class="v" id="stR">비움</div></div>
+      <div class="stat"><div class="k">폴딩</div><div class="v" id="foldVal">차단</div></div>
+    </div>
+  </div>
+
+  <div class="hud bottom">
+    <div class="card">
+      <div class="seat-row">
+        <button id="btnL">뒷좌-좌 탑승</button>
+        <button id="btnC">뒷좌-중 탑승</button>
+        <button id="btnR">뒷좌-우 탑승</button>
+      </div>
+      <div class="seat-row" style="margin-top:8px">
+        <button id="btnEmpty" class="ghost">전원 비움</button>
+        <button id="btnOccupy" class="ghost">전원 탑승</button>
+        <button id="btnFold" class="primary">접기 시도</button>
+        <button id="btnUnfold" class="ghost">시트 펼치기</button>
+        <button id="btnView" class="ghost">시점 리셋</button>
+      </div>
+    </div>
+    <div class="card help">
+      시트: SketchUp Car Interior · 뒷좌석이 비면 등받이가 접힙니다.
+    </div>
+  </div>
+
+  <script type="module" src="js/cabin.js?v=flip1"></script>
+</body>
+</html>

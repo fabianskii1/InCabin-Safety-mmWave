@@ -1,0 +1,7 @@
+# TI Industrial Visualizer (Python 3.9 or 3.10 only — PySide2 does not support 3.13)
+PySide2==5.15.2.1
+PyOpenGL
+numpy<2
+pyserial
+pyqtgraph
+json-fix

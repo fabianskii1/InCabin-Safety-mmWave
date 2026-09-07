@@ -45,6 +45,10 @@
 # Kernel Module Compile Results
 *.mod*
 *.cmd
+!firmware/vital_signs_tracking_dss/c674x_linker.cmd
+!firmware/vital_signs_tracking_dss/dss_mmw_linker.cmd
+!firmware/vital_signs_tracking_mss/r4f_linker.cmd
+!firmware/vital_signs_tracking_mss/mss_mmw_linker.cmd
 .tmp_versions/
 modules.order
 Module.symvers
