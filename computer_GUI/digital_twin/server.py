@@ -26,6 +26,11 @@ _state = {
     'apnea_sec': 0.0,
     'detail': '데모 대기',
     'cmd': None,
+    # 각성도 저하(졸음) 모니터 — vital_signs/drowsiness_judge.py 산출
+    'drowsy_state': 'CALIB',      # CALIB | NORMAL | DEVIATED
+    'drowsy_z': None,             # 개인 기준선 대비 z-score
+    'drowsy_calib_sec': 0.0,      # 보정 경과(초)
+    'drowsy_calib_need': 660.0,   # 보정 필요(초) = baseline 60 + cal 600
     'clearance': {
         'L': False,
         'C': False,

@@ -55,6 +55,7 @@ class DrowsinessJudge:
         self.need_consecutive = need_consecutive
 
         self.t0 = None                       # 첫 hr 샘플 시각(세션 시작 기준점)
+        self._last_t = 0.0                   # 최근 샘플 시각(보정 진행률 표시용)
         self.hr_buf = deque()                # [(t, hr)] 최근 window_sec초만 유지
         self.base_hr = []                    # baseline_sec초 동안의 raw HR (σ0 계산용)
         self.baseline_std = None             # σ0
@@ -79,6 +80,7 @@ class DrowsinessJudge:
     def _elapsed(self, t):
         if self.t0 is None:
             self.t0 = t
+        self._last_t = t
         return t - self.t0
 
     def update(self, t, hr):
@@ -157,6 +159,13 @@ class DrowsinessJudge:
 
         self._state = 'DEVIATED' if self.state_deviated else 'NORMAL'
         return self._state
+
+    def calib_progress(self):
+        """(경과초, 필요초) — UI 보정 진행률 표시용."""
+        need = self.baseline_sec + self.cal_sec
+        if self.t0 is None:
+            return 0.0, need
+        return max(0.0, self._last_t - self.t0), need
 
     def detail(self):
         """디버그/로깅용 스냅샷."""

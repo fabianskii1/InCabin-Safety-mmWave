@@ -22,6 +22,8 @@ const ui = {
   rr: document.getElementById('rrVal'),
   hr: document.getElementById('hrVal'),
   apnea: document.getElementById('apneaVal'),
+  drowsy: document.getElementById('drowsyVal'),
+  drowsyBadge: document.getElementById('drowsyBadge'),
   gap: document.getElementById('gapVal'),
   confirm: document.getElementById('confirmOverlay'),
   confirmSec: document.getElementById('confirmSec'),
@@ -45,6 +47,10 @@ const sensor = {
   apnea_sec: 0,
   detail: '',
   source: 'mock',
+  drowsy_state: 'CALIB',
+  drowsy_z: null,
+  drowsy_calib_sec: 0,
+  drowsy_calib_need: 660,
 };
 
 let phase = 'CRUISE';
@@ -589,6 +595,10 @@ function applySensor(data) {
   sensor.rr = Number(data.rr ?? sensor.rr);
   sensor.hr = Number(data.hr ?? sensor.hr);
   sensor.apnea_sec = Number(data.apnea_sec ?? sensor.apnea_sec);
+  sensor.drowsy_state = String(data.drowsy_state ?? sensor.drowsy_state).toUpperCase();
+  sensor.drowsy_z = data.drowsy_z ?? sensor.drowsy_z;
+  sensor.drowsy_calib_sec = Number(data.drowsy_calib_sec ?? sensor.drowsy_calib_sec);
+  sensor.drowsy_calib_need = Number(data.drowsy_calib_need ?? sensor.drowsy_calib_need);
   sensor.detail = data.detail || '';
   sensor.source = data.source || sensor.source;
 
@@ -624,11 +634,47 @@ function updateLights(t) {
   car.userData.brake.material.emissiveIntensity = emergency ? 1.4 : 0.25;
 }
 
+// 각성도 저하 모니터 표시.
+// 스코프상 '졸음 확정 경보'가 아니라 '개인 기준선 이탈 모니터'이므로
+// 적색 경보(danger)가 아닌 주의(warn) 톤까지만 사용한다.
+function updateDrowsyHud() {
+  if (!ui.drowsy || !ui.drowsyBadge) return;
+  const st = sensor.drowsy_state || 'CALIB';
+  const z = sensor.drowsy_z;
+
+  if (st === 'CALIB') {
+    const need = Math.max(1, sensor.drowsy_calib_need || 660);
+    const cur = Math.min(need, Math.max(0, sensor.drowsy_calib_sec || 0));
+    const pct = Math.floor((cur / need) * 100);
+    const mm = String(Math.floor(cur / 60)).padStart(1, '0');
+    const ss = String(Math.floor(cur % 60)).padStart(2, '0');
+    const nm = Math.floor(need / 60);
+    ui.drowsy.textContent = '보정 ' + pct + '%';
+    ui.drowsyBadge.textContent = '각성도 보정 중 ' + mm + ':' + ss + ' / ' + nm + ':00';
+    ui.drowsyBadge.className = 'badge drowsy-calib';
+    return;
+  }
+
+  const zTxt = (typeof z === 'number' && isFinite(z))
+    ? (z >= 0 ? '+' : '') + z.toFixed(1)
+    : '—';
+  ui.drowsy.textContent = zTxt;
+
+  if (st === 'DEVIATED') {
+    ui.drowsyBadge.textContent = '각성도 기준선 이탈';
+    ui.drowsyBadge.className = 'badge drowsy-dev';
+  } else {
+    ui.drowsyBadge.textContent = '각성도 정상';
+    ui.drowsyBadge.className = 'badge drowsy-ok';
+  }
+}
+
 function updateHud() {
   ui.speed.textContent = String(Math.round(speed * 3.6));
   ui.rr.textContent = String(Math.round(sensor.rr));
   ui.hr.textContent = String(Math.round(sensor.hr));
   ui.apnea.textContent = sensor.apnea_sec.toFixed(1) + 's';
+  updateDrowsyHud();
   if (ui.gap) {
     ui.gap.textContent = leadGap === Infinity ? '—' : Math.round(Math.max(0, leadGap)) + 'm';
   }

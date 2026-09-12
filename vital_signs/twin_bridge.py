@@ -53,6 +53,13 @@ EMPTY_CLEAR_SEC = 3.0
 HR_MEDIAN_N = 10
 
 
+def _round_or_none(v, nd=2):
+    try:
+        return None if v is None else round(float(v), nd)
+    except (TypeError, ValueError):
+        return None
+
+
 def _median(values):
     good = [float(v) for v in values if v is not None and float(v) > 0]
     if not good:
@@ -334,6 +341,9 @@ class OfficialVitals:
             'apnea_sec': round(self.apnea_sec, 1),
             'detail': detail,
             'drowsy_state': self.drowsy_state,   # 'CALIB' | 'NORMAL' | 'DEVIATED'
+            'drowsy_z': _round_or_none(self.judge.detail().get('z')),
+            'drowsy_calib_sec': round(self.judge.calib_progress()[0], 1),
+            'drowsy_calib_need': round(self.judge.calib_progress()[1], 1),
         }
 
 
