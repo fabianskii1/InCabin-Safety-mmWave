@@ -21,6 +21,7 @@ if str(GUI_ROOT) not in sys.path:
     sys.path.insert(0, str(GUI_ROOT))
 
 from digital_twin.bridge import TwinPublisher
+from drowsiness_judge import DrowsinessJudge
 
 ISK_REARVIEW_CFG = HERE / 'chirp_configs' / 'vital_signs_ISK_rearview.cfg'
 
@@ -135,6 +136,8 @@ class OfficialVitals:
         self.hr_hist = []
         self.rr_hist = []
         self._last_wave = None
+        self.judge = DrowsinessJudge()   # 개인 기준선 이탈 모니터 (3.3절)
+        self.drowsy_state = 'CALIB'
 
     def _reset_hold(self):
         self.hold_started = None
@@ -241,6 +244,8 @@ class OfficialVitals:
 
     def _show_empty(self):
         self._reset_hold_arm()
+        self.judge = DrowsinessJudge()
+        self.drowsy_state = 'CALIB'
         self.ntracks = 0
         self.label = ''
         self.hr = 0
@@ -297,6 +302,7 @@ class OfficialVitals:
                 self.hr_hist.append(hr)
                 while len(self.hr_hist) > HR_MEDIAN_N:
                     self.hr_hist.pop(0)
+                self.drowsy_state = self.judge.update(time.monotonic(), hr)
             if rr > 0:
                 self.rr_hist.append(rr)
                 while len(self.rr_hist) > HR_MEDIAN_N:
@@ -327,6 +333,7 @@ class OfficialVitals:
             'hr': 0 if empty else self.hr,
             'apnea_sec': round(self.apnea_sec, 1),
             'detail': detail,
+            'drowsy_state': self.drowsy_state,   # 'CALIB' | 'NORMAL' | 'DEVIATED'
         }
 
 
