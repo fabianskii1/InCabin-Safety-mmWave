@@ -1,0 +1,9 @@
+cfg   : ../chirp_configs/ISK_incabin_tightgate.cfg
+zones : placeholder
+===== 존별 점유 근거 집계 (프레임 수 / 비율) =====
+  Passenger  tot=1774 none=1774 (100.0%)
+  Rear-L     tot=1774 both=463 (26.1%) track=908 (51.2%) presence=47 (2.6%) hold=39 (2.2%) none=317 (17.9%)
+     - 점유 1457 프레임 중 presence 단독 47 (3.2%), 히스테리시스 잔류 39 (2.7%)
+  Rear-C     tot=1774 presence=4 (0.2%) hold=216 (12.2%) none=1554 (87.6%)
+     - 점유 220 프레임 중 presence 단독 4 (1.8%), 히스테리시스 잔류 216 (98.2%)
+  Rear-R     tot=1774 none=1774 (100.0%)

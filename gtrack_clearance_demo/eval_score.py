@@ -164,18 +164,18 @@ def main():
                 empty_miss[z] += sum(empty_flags)
                 empty_miss_events[z] += ev
 
-        # --- 위험 오허용 / 오차단 (per-row 유효 GT) ---
-        permit_flags = []   # 재실중 fold_permit(위험) 프레임 플래그
+        # --- 위험 오허용 / 오차단 (뒷좌석 기준 — 폴딩은 뒷좌 점유로만 판단, 조수석 무관) ---
+        permit_flags = []   # 뒷좌 재실중 fold_permit(위험) 프레임 플래그
         for r in srows:
-            egt = eff_gt(r)
+            rear_occ = any(z.startswith('Rear') for z in eff_gt(r))  # 폴딩 대상 = 뒷좌만
             permit = int(r['fold_permit']) == 1
-            if egt:
+            if rear_occ:
                 occ_gt_frames += 1
-                permit_flags.append(permit)   # 재실 중 허용 = 위험
+                permit_flags.append(permit)   # 뒷좌 재실 중 허용 = 위험
             else:
-                empty_all_frames += 1
+                empty_all_frames += 1          # 뒷좌 전부 비움(조수석 점유는 폴딩 무관)
                 if not permit:
-                    false_block_frames += 1    # 실제 공석인데 차단 = 오차단
+                    false_block_frames += 1    # 뒷좌 공석인데 차단 = 오차단
         if permit_flags:
             danger_permit_frames += sum(permit_flags)
             ev, longest = contiguous_runs(permit_flags)
@@ -269,16 +269,17 @@ def main():
     print('\n' + '─' * W)
     print(' ⓵ 안전 핵심 (fail-safe)')
     print('─' * W)
-    print('  위험 오허용(점유 중 FOLD 허용)  : {} 프레임 / {} 점유프레임 = {}'.format(
+    print('  위험 오허용(뒷좌 점유 중 FOLD 허용): {} 프레임 / {} 뒷좌점유프레임 = {}'.format(
         danger_permit_frames, occ_gt_frames, pct(rate(danger_permit_frames, occ_gt_frames))))
-    print('     └ 연속 이벤트 {}건, 최장 {} 프레임  [목표 0]'.format(
+    print('     └ 연속 이벤트 {}건, 최장 {} 프레임  [목표 0]  (조수석은 폴딩 무관, 제외)'.format(
         danger_permit_events, danger_permit_longest))
     tot_empty_miss = sum(empty_miss.values())
-    print('  EMPTY 오판(점유석을 빈 걸로)     : {} 프레임, 이벤트 {}건  [목표 0]'.format(
+    print('  EMPTY 오판(점유석을 빈 좌석으로)  : {} 프레임, 이벤트 {}건  (뒷좌=위험/조수석=검출누락)'.format(
         tot_empty_miss, sum(empty_miss_events.values())))
     for z in zones:
         if empty_miss[z]:
-            print('     └ {}: {} 프레임 / {} 이벤트'.format(z, empty_miss[z], empty_miss_events[z]))
+            tag = '위험' if z.startswith('Rear') else '검출누락'
+            print('     └ {}: {} 프레임 / {} 이벤트  [{}]'.format(z, empty_miss[z], empty_miss_events[z], tag))
     # 점유 검출 재현율(전체 좌석 종합)
     TP = sum(tp.values()); FN = sum(fn.values())
     print('  점유 검출 재현율 Recall(종합)    : {}  (TP={} FN={})'.format(
@@ -363,7 +364,7 @@ def _make_plots(out_dir, zones, tp, fp, fn, tn, rate, danger, occ_gt, sl, so):
     # 안전 요약
     fig2, ax2 = plt.subplots(figsize=(5, 3.2))
     vals = [danger, rate(so, sl) * 100 if sl else 0]
-    ax2.bar(['위험 오허용(frames)', '정지 유지율(%)'], vals, color=['#d43', '#2a8'])
+    ax2.bar(['Danger permit (frames)', 'Static retention (%)'], vals, color=['#d43', '#2a8'])
     ax2.set_title('Fail-safe summary')
     fig2.tight_layout(); fig2.savefig(os.path.join(out_dir, 'safety.png'), dpi=140)
     print('[plots] 저장: {}/seat_prf.png, safety.png'.format(out_dir))
