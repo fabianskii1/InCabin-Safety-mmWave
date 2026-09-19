@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 340" font-family="'Malgun Gothic','맑은 고딕',sans-serif">
+  <rect width="460" height="340" fill="#ffffff"/>
+  <text x="230" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="#15202b">Mahalanobis 통계 게이트</text>
+  <text x="230" y="44" text-anchor="middle" font-size="11" fill="#8695a4">게이트 형상 = 예측 공분산이 정의 (원이 아닌 타원)</text>
+
+  <!-- gate ellipse (rotated, anisotropic) -->
+  <g transform="rotate(24 220 190)">
+    <ellipse cx="220" cy="190" rx="128" ry="66" fill="#dcf0f4" opacity="0.55" stroke="#0d7490" stroke-width="2" stroke-dasharray="6 4"/>
+  </g>
+  <text x="322" y="120" font-size="11" fill="#0d7490">게이트 (mdp &lt; G)</text>
+
+  <!-- predicted position -->
+  <line x1="212" y1="190" x2="228" y2="190" stroke="#c23a2f" stroke-width="2.4"/>
+  <line x1="220" y1="182" x2="220" y2="198" stroke="#c23a2f" stroke-width="2.4"/>
+  <text x="220" y="212" text-anchor="middle" font-size="11" fill="#c23a2f">예측 위치 H(S⁻)</text>
+
+  <!-- inside points (accepted) -->
+  <g fill="#1a7f4b">
+    <circle cx="180" cy="165" r="5"/>
+    <circle cx="245" cy="205" r="5"/>
+    <circle cx="205" cy="215" r="5"/>
+    <circle cx="265" cy="170" r="5"/>
+  </g>
+  <!-- outside points (rejected) -->
+  <g fill="#9aa7b2">
+    <circle cx="90" cy="95" r="5"/>
+    <circle cx="360" cy="260" r="5"/>
+    <circle cx="380" cy="120" r="5"/>
+    <circle cx="110" cy="285" r="5"/>
+  </g>
+
+  <!-- legend -->
+  <circle cx="70" cy="316" r="5" fill="#1a7f4b"/>
+  <text x="82" y="320" font-size="11" fill="#1a2b33">연관 (게이트 내부)</text>
+  <circle cx="250" cy="316" r="5" fill="#9aa7b2"/>
+  <text x="262" y="320" font-size="11" fill="#1a2b33">배제 (유령·클러터)</text>
+</svg>

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 210" font-family="'Malgun Gothic','맑은 고딕',sans-serif">
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#5a6b7b"/>
+    </marker>
+  </defs>
+  <rect width="960" height="210" fill="#ffffff"/>
+  <text x="480" y="26" text-anchor="middle" font-size="16" font-weight="700" fill="#15202b">GTRACK 처리 파이프라인 (온칩, 프레임당 1회)</text>
+
+  <!-- input -->
+  <rect x="14" y="70" width="92" height="48" rx="8" fill="#f0f2f4" stroke="#b8c6d0"/>
+  <text x="60" y="90" text-anchor="middle" font-size="12.5" fill="#1a2b33">점군</text>
+  <text x="60" y="107" text-anchor="middle" font-size="12.5" fill="#1a2b33">(point cloud)</text>
+
+  <!-- processing boxes -->
+  <g>
+    <rect x="132" y="70" width="96" height="48" rx="8" fill="#dcf0f4" stroke="#0d7490"/>
+    <text x="180" y="99" text-anchor="middle" font-size="12.5" fill="#08414f">경계 필터</text>
+    <text x="180" y="140" text-anchor="middle" font-size="10.5" fill="#c23a2f">실내 밖 배제</text>
+
+    <rect x="254" y="70" width="96" height="48" rx="8" fill="#dcf0f4" stroke="#0d7490"/>
+    <text x="302" y="92" text-anchor="middle" font-size="12.5" fill="#08414f">예측</text>
+    <text x="302" y="108" text-anchor="middle" font-size="11" fill="#08414f">(EKF)</text>
+    <text x="302" y="140" text-anchor="middle" font-size="10.5" fill="#5a6b7b">운동모델·Q</text>
+
+    <rect x="376" y="70" width="96" height="48" rx="8" fill="#dcf0f4" stroke="#0d7490"/>
+    <text x="424" y="92" text-anchor="middle" font-size="12.5" fill="#08414f">연관</text>
+    <text x="424" y="108" text-anchor="middle" font-size="11" fill="#08414f">(게이팅)</text>
+    <text x="424" y="140" text-anchor="middle" font-size="10.5" fill="#c23a2f">유령·클러터 배제</text>
+
+    <rect x="498" y="70" width="96" height="48" rx="8" fill="#dcf0f4" stroke="#0d7490"/>
+    <text x="546" y="99" text-anchor="middle" font-size="12.5" fill="#08414f">할당</text>
+    <text x="546" y="140" text-anchor="middle" font-size="10.5" fill="#c23a2f">팬텀 억제</text>
+
+    <rect x="620" y="70" width="96" height="48" rx="8" fill="#dcf0f4" stroke="#0d7490"/>
+    <text x="668" y="92" text-anchor="middle" font-size="12.5" fill="#08414f">갱신</text>
+    <text x="668" y="108" text-anchor="middle" font-size="11" fill="#08414f">(EKF)</text>
+    <text x="668" y="140" text-anchor="middle" font-size="10.5" fill="#5a6b7b">칼만 보정·정지판정</text>
+
+    <rect x="742" y="70" width="96" height="48" rx="8" fill="#dcf0f4" stroke="#0d7490"/>
+    <text x="790" y="92" text-anchor="middle" font-size="12.5" fill="#08414f">상태전이</text>
+    <text x="790" y="108" text-anchor="middle" font-size="11" fill="#08414f">·리포트</text>
+    <text x="790" y="140" text-anchor="middle" font-size="10.5" fill="#5a6b7b">확정·정지 유지</text>
+  </g>
+
+  <!-- output -->
+  <rect x="864" y="70" width="86" height="48" rx="8" fill="#f0f2f4" stroke="#b8c6d0"/>
+  <text x="907" y="90" text-anchor="middle" font-size="12.5" fill="#1a2b33">트랙</text>
+  <text x="907" y="107" text-anchor="middle" font-size="11" fill="#1a2b33">{좌표·ID}</text>
+
+  <!-- arrows -->
+  <g stroke="#5a6b7b" stroke-width="1.6" marker-end="url(#ar)">
+    <line x1="106" y1="94" x2="130" y2="94"/>
+    <line x1="228" y1="94" x2="252" y2="94"/>
+    <line x1="350" y1="94" x2="374" y2="94"/>
+    <line x1="472" y1="94" x2="496" y2="94"/>
+    <line x1="594" y1="94" x2="618" y2="94"/>
+    <line x1="716" y1="94" x2="740" y2="94"/>
+    <line x1="838" y1="94" x2="862" y2="94"/>
+  </g>
+  <text x="480" y="180" text-anchor="middle" font-size="11" fill="#8695a4">공간(경계) · 통계(게이팅) · 시간(EKF·상태머신)의 3축 방어</text>
+</svg>
