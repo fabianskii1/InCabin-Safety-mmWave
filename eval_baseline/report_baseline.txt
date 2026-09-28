@@ -1,0 +1,81 @@
+================================================================
+ 트래킹 성능 평가  (폴딩 끼임 방지 시스템)
+================================================================
+ 트라이얼 23개 · steady 프레임 기준(warmup 제외)
+  empty            static #1  gt=[공석          ] frames=1689
+  empty            static #2  gt=[공석          ] frames=1683
+  empty            static #3  gt=[공석          ] frames=1684
+  passenger_solo   static #1  gt=[Passenger   ] frames=1683
+  passenger_solo   static #2  gt=[Passenger   ] frames=1684
+  passenger_solo   static #3  gt=[Passenger   ] frames=1683
+  passenger_solo   motion #1  gt=[Passenger   ] frames=1684
+  passenger_solo   motion #2  gt=[Passenger   ] frames=1683
+  rearL_solo       static #1  gt=[Rear-L      ] frames=1685
+  rearL_solo       static #2  gt=[Rear-L      ] frames=1679
+  rearL_solo       static #3  gt=[Rear-L      ] frames=1687
+  rearL_solo       motion #1  gt=[Rear-L      ] frames=1685
+  rearL_solo       motion #2  gt=[Rear-L      ] frames=1687
+  rearC_solo       static #1  gt=[Rear-C      ] frames=1687
+  rearC_solo       static #2  gt=[Rear-C      ] frames=1683
+  rearC_solo       static #3  gt=[Rear-C      ] frames=1685
+  rearC_solo       motion #1  gt=[Rear-C      ] frames=1690
+  rearC_solo       motion #2  gt=[Rear-C      ] frames=1688
+  rearR_solo       static #1  gt=[Rear-R      ] frames=1687
+  rearR_solo       static #2  gt=[Rear-R      ] frames=1685
+  rearR_solo       static #3  gt=[Rear-R      ] frames=1683
+  rearR_solo       motion #1  gt=[Rear-R      ] frames=1685
+  rearR_solo       motion #2  gt=[Rear-R      ] frames=1681
+
+────────────────────────────────────────────────────────────────
+ ⓵ 안전 핵심 (fail-safe)
+────────────────────────────────────────────────────────────────
+  위험 오허용(뒷좌 점유 중 FOLD 허용): 3775 프레임 / 23174 뒷좌점유프레임 =  16.3%
+     └ 연속 이벤트 24건, 최장 572 프레임  [목표 0]  (조수석은 폴딩 무관, 제외)
+  EMPTY 오판(점유석을 빈 좌석으로)  : 5646 프레임, 이벤트 36건  (뒷좌=위험/조수석=검출누락)
+     └ Passenger: 1635 프레임 / 12 이벤트  [검출누락]
+     └ Rear-L: 979 프레임 / 5 이벤트  [위험]
+     └ Rear-C: 2464 프레임 / 14 이벤트  [위험]
+     └ Rear-R: 568 프레임 / 5 이벤트  [위험]
+  점유 검출 재현율 Recall(종합)    :  81.7%  (TP=25248 FN=5646)
+  정지 착석 검출 유지율(래치 후)   :  83.2%  (14098/16951 프레임)
+
+────────────────────────────────────────────────────────────────
+ ⓶ 신뢰·사용성
+────────────────────────────────────────────────────────────────
+  좌석별 혼동행렬 (OCCUPIED=positive)
+    zone          TP    FP    FN    TN |   Prec    Rec     F1
+    Passenger   6085     0  1635 27806 | 100.0%  78.8%  88.2%
+    Rear-L      6746  1126   979 26675 |  85.7%  87.3%  86.5%
+    Rear-C      5263   531  2464 27268 |  90.8%  68.1%  77.8%
+    Rear-R      7154  1913   568 25891 |  78.9%  92.6%  85.2%
+  오차단률(공석인데 FOLD 차단)     :  53.0%  (6542/12352 프레임)
+  (반응지연: 마커(s/e) 기록이 없어 생략)
+
+────────────────────────────────────────────────────────────────
+ ⓷ 트래킹 품질 근거
+────────────────────────────────────────────────────────────────
+  위치오차(측방 X) : MAE 0.055m  RMSE 0.070m
+  위치오차(전방 Y) : MAE 0.166m  RMSE 0.185m  (n=20196 샘플)
+  고스트 트랙률(예상 초과 프레임) :  56.5%  (평균 초과 1.00개)
+  과분할 ID(고유 ID수 vs 예상 인원):
+     passenger_solo   static #1: 예상 1 / 관측 1
+     passenger_solo   static #2: 예상 1 / 관측 1
+     passenger_solo   static #3: 예상 1 / 관측 2  ⚠ 과분할
+     passenger_solo   motion #1: 예상 1 / 관측 6  ⚠ 과분할
+     passenger_solo   motion #2: 예상 1 / 관측 4  ⚠ 과분할
+     rearL_solo       static #1: 예상 1 / 관측 6  ⚠ 과분할
+     rearL_solo       static #2: 예상 1 / 관측 9  ⚠ 과분할
+     rearL_solo       static #3: 예상 1 / 관측 3  ⚠ 과분할
+     rearL_solo       motion #1: 예상 1 / 관측 4  ⚠ 과분할
+     rearL_solo       motion #2: 예상 1 / 관측 2  ⚠ 과분할
+     rearC_solo       static #1: 예상 1 / 관측 6  ⚠ 과분할
+     rearC_solo       static #2: 예상 1 / 관측 7  ⚠ 과분할
+     rearC_solo       static #3: 예상 1 / 관측 7  ⚠ 과분할
+     rearC_solo       motion #1: 예상 1 / 관측 5  ⚠ 과분할
+     rearC_solo       motion #2: 예상 1 / 관측 3  ⚠ 과분할
+     rearR_solo       static #1: 예상 1 / 관측 2  ⚠ 과분할
+     rearR_solo       static #2: 예상 1 / 관측 8  ⚠ 과분할
+     rearR_solo       static #3: 예상 1 / 관측 7  ⚠ 과분할
+     rearR_solo       motion #1: 예상 1 / 관측 5  ⚠ 과분할
+     rearR_solo       motion #2: 예상 1 / 관측 11  ⚠ 과분할
+================================================================

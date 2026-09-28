@@ -36,10 +36,9 @@ class ClearancePublisher:
             elif zone == 'Passenger':
                 passenger_occ = occ   # 앞좌석 점유(폴딩 무관, 표시용)
 
-        # 뒷좌석 폴딩 허용은 뒷좌석(L/C/R) 점유로만 판단 — 조수석(앞좌석)은 폴딩 무관.
-        # (monitor.fold_permitted 는 전 존 EMPTY 기준이라 조수석까지 막으므로 여기선 뒷좌만)
-        rear_fold_ok = not (seats_occ['L'] or seats_occ['C'] or seats_occ['R'])
-
+        # 폴딩 허용은 판정기(presence_monitor.fold_permitted) 값을 그대로 보낸다:
+        # 뒷좌(Rear*) 전 존 EMPTY 확정 + 워밍업 경과일 때만 True (조수석 제외).
+        # 여기서 'OCCUPIED 없음'으로 다시 계산하면 워밍업·UNKNOWN 중에도 허용으로 표시된다.
         payload = {
             'source': 'gtrack_clearance',
             'clearance': {
@@ -47,7 +46,7 @@ class ClearancePublisher:
                 'C': seats_occ['C'],
                 'R': seats_occ['R'],
                 'passenger': passenger_occ,
-                'fold_permit': rear_fold_ok,
+                'fold_permit': bool(fold_permitted),
             }
         }
 

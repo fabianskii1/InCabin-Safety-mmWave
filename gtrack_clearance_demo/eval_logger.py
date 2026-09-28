@@ -64,7 +64,7 @@ def main():
     ap.add_argument('dataPort')
     ap.add_argument('configFile', help='3D People Tracking cfg')
     ap.add_argument('--no-config', action='store_true')
-    ap.add_argument('--zones', choices=list(cg.SEAT_SETS.keys()), default='vehicle')
+    ap.add_argument('--zones', choices=list(cg.SEAT_SETS.keys()), default='placeholder')
     ap.add_argument('--scenario', required=True, help='시나리오 이름(예: rearR_solo)')
     ap.add_argument('--gt', default='', help='실제 점유 좌석(쉼표구분, 공석이면 빈값)')
     ap.add_argument('--cond', choices=['static', 'motion'], default='motion',

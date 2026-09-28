@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 320" font-family="'Malgun Gothic','맑은 고딕',sans-serif">
+  <rect width="540" height="320" fill="#ffffff"/>
+  <text x="270" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="#15202b">공분산(불확실성)의 수렴 — 과도구간 → 정상상태</text>
+
+  <!-- transient shaded region -->
+  <rect x="70" y="45" width="120" height="215" fill="#f6e8d5" opacity="0.7"/>
+  <text x="130" y="62" text-anchor="middle" font-size="11" fill="#b4610a">과도구간</text>
+  <text x="130" y="76" text-anchor="middle" font-size="10" fill="#b4610a">(불안정)</text>
+  <text x="360" y="62" text-anchor="middle" font-size="11" fill="#1a7f4b">정상상태 (안정)</text>
+
+  <!-- axes -->
+  <line x1="70" y1="260" x2="500" y2="260" stroke="#5a6b7b" stroke-width="1.4"/>
+  <line x1="70" y1="45" x2="70" y2="260" stroke="#5a6b7b" stroke-width="1.4"/>
+  <text x="285" y="292" text-anchor="middle" font-size="12" fill="#1a2b33">시간 (프레임)</text>
+  <text x="30" y="155" text-anchor="middle" font-size="12" fill="#1a2b33" transform="rotate(-90 30 155)">추정 불확실성 (공분산·게이트 폭)</text>
+
+  <!-- decay curve -->
+  <path d="M70,70 C150,90 175,205 260,225 C345,240 420,244 500,245" fill="none" stroke="#0d7490" stroke-width="3"/>
+
+  <!-- gate ellipses shrinking -->
+  <ellipse cx="95" cy="70" rx="20" ry="11" fill="none" stroke="#0d7490" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <ellipse cx="200" cy="180" rx="12" ry="7" fill="none" stroke="#0d7490" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <ellipse cx="400" cy="244" rx="6" ry="4" fill="none" stroke="#0d7490" stroke-width="1.2" stroke-dasharray="3 3"/>
+
+  <!-- annotations -->
+  <circle cx="70" cy="70" r="3.5" fill="#c23a2f"/>
+  <text x="80" y="60" font-size="10.5" fill="#c23a2f">트랙 생성 (넓은 게이트)</text>
+  <text x="500" y="235" text-anchor="end" font-size="10.5" fill="#1a7f4b">수렴 (좁은 게이트)</text>
+</svg>

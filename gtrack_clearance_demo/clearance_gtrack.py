@@ -61,7 +61,7 @@ SEATS_PLACEHOLDER = [
 ]
 
 SEAT_SETS = {'vehicle': SEATS_VEHICLE, 'placeholder': SEATS_PLACEHOLDER}
-DEFAULT_SEATS = SEATS_VEHICLE   # 기본 = 실차 튜닝
+DEFAULT_SEATS = SEATS_PLACEHOLDER   # 기본 = placeholder (실측 재채점상 vehicle보다 우세: 위험오허용 16.3→8.8%, Rear-C F1 77→87)
 
 
 class ZoneClearance:

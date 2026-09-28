@@ -70,10 +70,13 @@ python computer_GUI/digital_twin/server.py
 그다음 (Industrial Visualizer는 닫고):
 
 ```text
-python gtrack_clearance_demo/main_gtrack_clearance.py COM4 COM5 "<ISK_incabin_multi.cfg 경로>" --plot
+python gtrack_clearance_demo/main_presence_clearance.py
+python gtrack_clearance_demo/main_presence_clearance.py COM4 COM5
 ```
 
-이미 스트리밍 중이면 `--no-config` 를 붙입니다.
+포트 기본값은 COM10 / COM11, cfg 기본값은 `chirp_configs/ISK_incabin_tightgate.cfg` 입니다.
+포트가 다르면 두 번째 줄처럼 옵션보다 앞에 적습니다. 이미 스트리밍 중이면 `--no-config` 를 붙입니다.
+판정 설정(K=2, F=3초, E=3초)과 측정·평가 옵션은 `gtrack_clearance_demo/README.md` 를 보세요.
 
 브라우저: [http://127.0.0.1:8766/cabin.html](http://127.0.0.1:8766/cabin.html)
 
@@ -85,6 +88,7 @@ python gtrack_clearance_demo/main_gtrack_clearance.py COM4 COM5 "<ISK_incabin_mu
 ```text
 python gtrack_clearance_demo/track_parser.py
 python gtrack_clearance_demo/clearance_gtrack.py
+python gtrack_clearance_demo/presence_monitor.py
 ```
 
 좌석 박스 캘리브레이션은 `gtrack_clearance_demo/README.md` 를 보세요.

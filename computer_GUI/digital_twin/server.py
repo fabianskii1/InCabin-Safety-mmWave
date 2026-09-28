@@ -134,7 +134,7 @@ def main():
     server = ThreadingHTTPServer((HOST, PORT), TwinHandler)
     print('Digital twin: http://{}:{}'.format(HOST, PORT))
     print('Emergency: python vital_signs/run_twin.py')
-    print('Cabin fold: python gtrack_clearance_demo/main_gtrack_clearance.py ...')
+    print('Cabin fold: python gtrack_clearance_demo/main_presence_clearance.py')
     try:
         server.serve_forever()
     except KeyboardInterrupt:

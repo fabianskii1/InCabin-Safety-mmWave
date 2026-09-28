@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 470" font-family="'Malgun Gothic','맑은 고딕',sans-serif">
+  <defs>
+    <marker id="a4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#9aa7b2"/></marker>
+  </defs>
+  <rect width="500" height="470" fill="#ffffff"/>
+  <text x="250" y="28" text-anchor="middle" font-size="15" font-weight="700" fill="#15202b">좌석 존 배치 (placeholder, 센서 기준 top-down)</text>
+
+  <!-- origin (sensor) at (235,82) ; screen_x=235+X*175 ; screen_y=82+Y*175 -->
+  <!-- sensor marker: triangle pointing down + dot -->
+  <path d="M235,82 L227,66 L243,66 Z" fill="#0d7490"/>
+  <circle cx="235" cy="82" r="4" fill="#0d7490"/>
+  <!-- sensor label to the LEFT (no overlap) -->
+  <text x="218" y="78" text-anchor="end" font-size="11.5" fill="#08414f">센서 (원점)</text>
+
+  <!-- X axis -->
+  <line x1="235" y1="82" x2="424" y2="82" stroke="#9aa7b2" stroke-width="1.2" marker-end="url(#a4)"/>
+  <text x="430" y="86" font-size="10.5" fill="#8695a4">+X (조수석)</text>
+  <!-- Y axis -->
+  <line x1="235" y1="82" x2="235" y2="440" stroke="#9aa7b2" stroke-width="1.2" marker-end="url(#a4)"/>
+  <text x="243" y="108" font-size="10.5" fill="#8695a4">+Y (전방 거리)</text>
+
+  <!-- driver (context, not a zone) : x[-0.70,-0.10] y[0.40,1.00] -->
+  <rect x="112" y="152" width="105" height="105" rx="4" fill="none" stroke="#c9d3da" stroke-dasharray="4 3"/>
+  <text x="164" y="207" text-anchor="middle" font-size="11" fill="#b8c6d0">운전석(대상 외)</text>
+
+  <!-- Passenger x[0.10,0.70] y[0.40,1.00] -->
+  <rect x="252" y="152" width="105" height="105" rx="4" fill="#dcf0f4" opacity="0.7" stroke="#0d7490"/>
+  <text x="304" y="207" text-anchor="middle" font-size="12" font-weight="600" fill="#08414f">조수석</text>
+
+  <!-- Rear-L x[-0.85,-0.20] y[1.10,1.90] -->
+  <rect x="86" y="275" width="114" height="140" rx="4" fill="#eef3f6" opacity="0.85" stroke="#5a6b7b"/>
+  <text x="143" y="349" text-anchor="middle" font-size="12" font-weight="600" fill="#334455">뒷좌-좌</text>
+  <!-- Rear-C x[-0.25,0.25] y[1.10,1.90] -->
+  <rect x="191" y="275" width="88" height="140" rx="4" fill="#eef3f6" opacity="0.6" stroke="#5a6b7b"/>
+  <text x="235" y="349" text-anchor="middle" font-size="12" font-weight="600" fill="#334455">뒷좌-중</text>
+  <!-- Rear-R x[0.20,0.85] y[1.10,1.90] -->
+  <rect x="270" y="275" width="114" height="140" rx="4" fill="#eef3f6" opacity="0.6" stroke="#5a6b7b"/>
+  <text x="327" y="349" text-anchor="middle" font-size="12" font-weight="600" fill="#334455">뒷좌-우</text>
+
+  <!-- fold decision note -->
+  <text x="250" y="458" text-anchor="middle" font-size="11" fill="#1a7f4b">폴딩 허용 = 뒷좌 3존 모두 EMPTY ∧ 워밍업 경과 (조수석 제외)</text>
+</svg>
