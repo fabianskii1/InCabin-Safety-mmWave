@@ -61,3 +61,6 @@ dkms.conf
 # Python cache
 __pycache__/
 *.pyc
+
+# 개인 작업 기록(저장소 제외)
+개선정리_*.md
